@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Pembelajaran Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .section-hidden {
+            display: none;
+        }
+        .mood-btn:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s;
+        }
+        .nav-btn {
+            transition: all 0.3s ease;
+        }
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 40;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+        .step-item {
+            transition: all 0.3s ease;
+        }
+        .step-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .step-item.active {
+            background: rgba(255,255,255,0.2);
+            border-left: 4px solid #fbbf24;
+        }
+        .step-item.completed {
+            background: rgba(34,197,94,0.2);
+        }
+        .main-content {
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            width: calc(100% - 280px);
+        }
+        .main-content.no-sidebar {
+            margin-left: 0;
+            width: 100%;
+        }
+        .navbar-desktop {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-indicator {
+            background: #f3f4f6;
+            color: #6b7280;
+            font-style: italic;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 48px;
+            height: 48px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .mobile-menu-btn:hover {
+            background: #4338ca;
+            transform: scale(1.05);
+        }
+        .hamburger-line {
+            width: 24px;
+            height: 3px;
+            background: white;
+            margin: 2px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+            display: block;
+        }
+        #sidebar-ai-content {
+            transition: all 0.3s ease;
+        }
+        #sidebar-ai-content.minimized {
+            height: 0;
+            opacity: 0;
+        }
+        .sidebar-ai-message {
+            margin-bottom: 6px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            max-width: 90%;
+            animation: slideIn 0.3s ease-out;
+            font-size: 0.75rem;
+            line-height: 1.3;
+        }
+        .sidebar-ai-message.user {
+            background: rgba(255,255,255,0.9);
+            color: #4f46e5;
+            margin-left: auto;
+        }
+        .sidebar-ai-message.bot {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            white-space: pre-line;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 250px;
+                transform: translateX(-100%);
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            .navbar-desktop {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            .chatbot-container {
+                width: 90%;
+                max-width: 350px;
+                height: 80%;
+                max-height: 500px;
+            }
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+            .desktop-only {
+                display: none;
+            }
+        }
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none;
+            }
+            .desktop-only {
+                display: block;
+            }
+        }
+        
+        /* Chatbot Popup Styles */
+        .chatbot-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .chatbot-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .chatbot-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            width: 400px;
+            max-width: 90vw;
+            height: 600px;
+            max-height: 80vh;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chatbot-container.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px 16px 0 0;
+            position: relative;
+        }
+        
+        .chatbot-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .chatbot-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .chatbot-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        
+        .chatbot-message {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 85%;
+            animation: slideIn 0.3s ease-out;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+        
+        .chatbot-message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .chatbot-message.bot {
+            background: white;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .chatbot-input-area {
+            padding: 20px;
+            background: white;
+            border-radius: 0 0 16px 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .chatbot-input-container {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .chatbot-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .chatbot-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .chatbot-send {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .chatbot-send:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-full">
+    <!-- Sidebar Navigation -->
+    <div id="sidebar" class="sidebar">
+        <div class="p-6">
+            <h2 class="text-white text-xl font-bold mb-6">📋 Langkah Pembelajaran</h2>
+            <div class="space-y-3">
+                <!-- Step 1: Pendahuluan -->
+                <div class="step-item active rounded-lg p-4 cursor-pointer" onclick="showSection('pendahuluan')" data-step="pendahuluan">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold mr-4">1</div>
+                        <div>
+                            <div class="text-white font-semibold text-lg">🌅 Pendahuluan</div>
+                            <div class="text-gray-200 text-sm">Salam, Doa & Persiapan</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Pembelajaran -->
+                <div class="step-item rounded-lg p-4 cursor-pointer" onclick="showSection('kegiatan-inti')" data-step="kegiatan-inti">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4">2</div>
+                        <div>
+                            <div class="text-white font-semibold text-lg">📖 Pembelajaran</div>
+                            <div class="text-gray-200 text-sm">Materi & Latihan</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Penutup -->
+                <div class="step-item rounded-lg p-4 cursor-pointer" onclick="showSection('penutup')" data-step="penutup">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-4">3</div>
+                        <div>
+                            <div class="text-white font-semibold text-lg">🎯 Penutup</div>
+                            <div class="text-gray-200 text-sm">Refleksi & Penutup</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Assistant in Sidebar -->
+            <div class="mt-8 border-t border-white border-opacity-30 pt-6">
+                <div class="bg-white bg-opacity-10 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3">
+                                <span class="text-lg">🤖</span>
+                            </div>
+                            <div>
+                                <h3 class="text-white font-bold text-sm">Asisten AI</h3>
+                                <p class="text-xs text-gray-200">Sistem Komputer</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="toggleChatbot()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                <span>Popup</span>
+                            </button>
+                            <button onclick="toggleSidebarAI()" id="sidebar-ai-toggle" class="text-white hover:text-gray-200 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Content -->
+                    <div id="sidebar-ai-content" class="transition-all duration-300 overflow-hidden">
+                        <!-- Quick Actions -->
+                        <div class="mb-4">
+                            <h4 class="text-white text-xs font-semibold mb-2">💡 Pertanyaan Cepat:</h4>
+                            <div class="space-y-1">
+                                <button onclick="askSidebarQuestion('Jelaskan perbedaan hardware dan software')" class="w-full text-left text-xs bg-white bg-opacity-20 hover:bg-opacity-30 p-2 rounded transition-colors text-white">
+                                    💻 Hardware vs Software
+                                </button>
+                                <button onclick="askSidebarQuestion('Bagaimana cara kerja jaringan komputer?')" class="w-full text-left text-xs bg-white bg-opacity-20 hover:bg-opacity-30 p-2 rounded transition-colors text-white">
+                                    🌐 Jaringan Komputer
+                                </button>
+                                <button onclick="askSidebarQuestion('Tips keamanan komputer dari virus')" class="w-full text-left text-xs bg-white bg-opacity-20 hover:bg-opacity-30 p-2 rounded transition-colors text-white">
+                                    🔒 Keamanan Sistem
+                                </button>
+
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Messages -->
+                        <div id="sidebar-chat-messages" class="h-48 overflow-y-auto mb-3 bg-white bg-opacity-10 rounded p-2">
+                            <div class="sidebar-ai-message bot">
+                                Halo! Saya asisten pembelajaran Sistem Komputer. Silakan bertanya seputar hardware, software, jaringan, dan teknologi komputer lainnya! 🚀💻
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Input -->
+                        <div class="flex space-x-2">
+                            <input 
+                                type="text" 
+                                id="sidebar-chat-input" 
+                                placeholder="Ketik pertanyaan..." 
+                                class="flex-1 p-2 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-white focus:border-transparent"
+                                onkeypress="handleSidebarChatKeyPress(event)"
+                            >
+                            <button 
+                                onclick="sendSidebarMessage()" 
+                                class="bg-white text-indigo-600 px-2 py-2 rounded hover:bg-gray-100 transition-colors"
+                            >
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50 navbar-desktop">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleMobileSidebar()" class="mobile-menu-btn">
+                        <div class="hamburger-line"></div>
+                        <div class="hamburger-line"></div>
+                        <div class="hamburger-line"></div>
+                    </button>
+                </div>
+                
+                <h1 class="text-2xl font-bold text-indigo-600">📚 SISTEM KOMPUTER</h1>
+                <h6>Abdul Haris, S.kom</h6>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleChatbot()" class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        <span class="font-medium">💬 Chat AI</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="main-content" class="main-content p-6">
+        <!-- PENDAHULUAN SECTION -->
+        <div id="pendahuluan" class="section fade-in">
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-3xl font-bold text-center text-green-600 mb-6">🌅 PENDAHULUAN</h2>
+                
+                <!-- Salam -->
+                <div class="bg-green-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-green-700 mb-3">1. Salam Pembuka</h3>
+                    <div class="text-center">
+                        <p class="text-xl text-gray-800 mb-2" style="font-family: 'Amiri', serif; direction: rtl;">السَّلاَمُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ</p>
+                        <p class="text-lg text-gray-700 mb-2">Assalamu'alaikum Warahmatullahi Wabarakatuh</p>
+                        <p class="text-lg text-gray-700 mb-2">Selamat pagi anak-anak! 🌞</p>
+                        <p class="text-base text-gray-600">Semoga kalian semua dalam keadaan sehat dan semangat belajar!</p>
+                    </div>
+                </div>
+
+                <!-- Doa -->
+                <div class="bg-blue-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-4">2. Doa Menurut Agama dan Kepercayaan</h3>
+                    <p class="text-gray-600 mb-4 text-center">Pilih agama/kepercayaan Anda untuk berdoa bersama:</p>
+                    
+                    <!-- Tombol Pilihan Agama -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                        <button onclick="showPrayer('islam')" class="prayer-btn bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            🕌 Islam
+                        </button>
+                        <button onclick="showPrayer('kristen')" class="prayer-btn bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            ✝️ Kristen
+                        </button>
+                        <button onclick="showPrayer('katolik')" class="prayer-btn bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            ⛪ Katolik
+                        </button>
+                        <button onclick="showPrayer('hindu')" class="prayer-btn bg-yellow-500 hover:bg-yellow-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            🕉️ Hindu
+                        </button>
+                        <button onclick="showPrayer('buddha')" class="prayer-btn bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            ☸️ Buddha
+                        </button>
+                        <button onclick="showPrayer('konghucu')" class="prayer-btn bg-red-500 hover:bg-red-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            ☯️ Konghucu
+                        </button>
+                    </div>
+
+                    <!-- Area Tampilan Doa -->
+                    <div id="prayer-display" class="bg-white rounded-lg p-6 border-2 border-gray-200 min-h-32 hidden">
+                        <div id="prayer-content" class="text-center">
+                            <!-- Konten doa akan muncul di sini -->
+                        </div>
+                    </div>
+
+                    <!-- Pesan Default -->
+                    <div id="prayer-default" class="text-center text-gray-500 py-8">
+                        <div class="text-4xl mb-3">🙏</div>
+                        <p>Silakan pilih agama/kepercayaan Anda untuk menampilkan doa</p>
+                    </div>
+                </div>
+
+                <!-- Absensi -->
+                <div class="bg-yellow-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-yellow-700 mb-4">3. Absensi Siswa</h3>
+                    <div class="text-center">
+                        <p class="text-gray-700 mb-4">Silakan isi absensi melalui Google Classroom:</p>
+                        <iframe src="https://forms.gle/WvbtNkB1R9yQgCJ87" width="100%" height="400" frameborder="0" class="rounded-lg shadow-md mb-4"></iframe>
+                        
+                        <!-- Tombol Alternatif -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                            <div class="flex items-center justify-center mb-3">
+                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <span class="text-blue-700 font-medium">Form absensi tidak muncul?</span>
+                            </div>
+                            <p class="text-sm text-blue-600 mb-3">Jika form absensi tidak muncul, berarti device Anda tidak support embed. Gunakan tombol di bawah untuk membuka di Google Forms:</p>
+                            <a href="https://forms.gle/WvbtNkB1R9yQgCJ87" target="_blank" rel="noopener noreferrer" class="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                                </svg>
+                                Buka Form Absensi
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perasaan -->
+                <div class="bg-pink-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-pink-700 mb-4">4. Bagaimana Perasaanmu Hari Ini?</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <button onclick="selectMood('senang')" class="mood-btn bg-green-200 hover:bg-green-300 p-4 rounded-lg text-center">
+                            <div class="text-3xl mb-2">😊</div>
+                            <div class="font-medium">Senang</div>
+                        </button>
+                        <button onclick="selectMood('sedih')" class="mood-btn bg-blue-200 hover:bg-blue-300 p-4 rounded-lg text-center">
+                            <div class="text-3xl mb-2">😢</div>
+                            <div class="font-medium">Sedih</div>
+                        </button>
+                        <button onclick="selectMood('marah')" class="mood-btn bg-red-200 hover:bg-red-300 p-4 rounded-lg text-center">
+                            <div class="text-3xl mb-2">😠</div>
+                            <div class="font-medium">Marah</div>
+                        </button>
+                        <button onclick="selectMood('biasa')" class="mood-btn bg-gray-200 hover:bg-gray-300 p-4 rounded-lg text-center">
+                            <div class="text-3xl mb-2">😐</div>
+                            <div class="font-medium">Biasa Saja</div>
+                        </button>
+                    </div>
+                    <div id="mood-feedback" class="text-center text-lg font-medium hidden"></div>
+                </div>
+
+                <!-- Manajemen Diri -->
+                <div class="bg-indigo-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-indigo-700 mb-4">5. Manajemen Diri Bersama</h3>
+                    <p class="text-gray-600 mb-4 text-center">Mari berkomitmen untuk menerapkan nilai-nilai positif dalam pembelajaran hari ini!</p>
+                    
+                    <!-- Nilai-nilai Interaktif -->
+                    <div class="grid md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-lg text-center border-2 border-transparent hover:border-blue-300 transition-all duration-300 cursor-pointer transform hover:scale-105" onclick="commitToValue('fokus')">
+                            <div class="text-3xl mb-3">🎯</div>
+                            <h4 class="font-semibold mb-2 text-blue-600">Fokus</h4>
+                            <p class="text-sm text-gray-600 mb-3">Berkonsentrasi pada pembelajaran</p>
+                            <div class="commitment-status" id="fokus-status">
+                                <button class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition-colors">Komitmen</button>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg text-center border-2 border-transparent hover:border-green-300 transition-all duration-300 cursor-pointer transform hover:scale-105" onclick="commitToValue('kerjasama')">
+                            <div class="text-3xl mb-3">🤝</div>
+                            <h4 class="font-semibold mb-2 text-green-600">Kerjasama</h4>
+                            <p class="text-sm text-gray-600 mb-3">Saling membantu dalam belajar</p>
+                            <div class="commitment-status" id="kerjasama-status">
+                                <button class="bg-green-500 text-white px-3 py-1 rounded-full text-xs hover:bg-green-600 transition-colors">Komitmen</button>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg text-center border-2 border-transparent hover:border-purple-300 transition-all duration-300 cursor-pointer transform hover:scale-105" onclick="commitToValue('semangat')">
+                            <div class="text-3xl mb-3">💪</div>
+                            <h4 class="font-semibold mb-2 text-purple-600">Semangat</h4>
+                            <p class="text-sm text-gray-600 mb-3">Belajar dengan antusias</p>
+                            <div class="commitment-status" id="semangat-status">
+                                <button class="bg-purple-500 text-white px-3 py-1 rounded-full text-xs hover:bg-purple-600 transition-colors">Komitmen</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Tracker -->
+                    <div class="bg-white rounded-lg p-4 mb-4">
+                        <h4 class="font-semibold text-gray-700 mb-3 text-center">📊 Progress Komitmen Saya</h4>
+                        <div class="flex justify-center items-center space-x-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-indigo-600" id="commitment-count">0</div>
+                                <div class="text-xs text-gray-500">dari 3 nilai</div>
+                            </div>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 max-w-xs">
+                                <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500" id="progress-bar" style="width: 0%"></div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg" id="progress-emoji">😊</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Target Harian -->
+                    <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-4 mb-4">
+                        <h4 class="font-semibold text-orange-700 mb-3">🎯 Target Pembelajaran Hari Ini</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="target-1" class="mr-2 w-4 h-4 text-orange-600 rounded focus:ring-orange-500" onchange="updateTargetProgress()">
+                                <label for="target-1" class="text-sm text-gray-700">Mengikuti pembelajaran dengan penuh perhatian</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="target-2" class="mr-2 w-4 h-4 text-orange-600 rounded focus:ring-orange-500" onchange="updateTargetProgress()">
+                                <label for="target-2" class="text-sm text-gray-700">Berpartisipasi aktif dalam diskusi</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="target-3" class="mr-2 w-4 h-4 text-orange-600 rounded focus:ring-orange-500" onchange="updateTargetProgress()">
+                                <label for="target-3" class="text-sm text-gray-700">Membantu teman yang kesulitan</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="target-4" class="mr-2 w-4 h-4 text-orange-600 rounded focus:ring-orange-500" onchange="updateTargetProgress()">
+                                <label for="target-4" class="text-sm text-gray-700">Menyelesaikan tugas dengan baik</label>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <span class="text-sm font-medium text-orange-600" id="target-progress">Target tercapai: 0/4</span>
+                        </div>
+                    </div>
+
+                    <!-- Motivasi Harian -->
+                    <div class="bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-rose-700 mb-3">💝 Motivasi Hari Ini</h4>
+                        <div class="text-center">
+                            <button onclick="getRandomMotivation()" class="bg-rose-500 text-white px-4 py-2 rounded-lg hover:bg-rose-600 transition-colors mb-3">
+                                🎲 Dapatkan Motivasi
+                            </button>
+                            <div id="daily-motivation" class="text-sm text-gray-700 italic min-h-12 flex items-center justify-center">
+                                Klik tombol di atas untuk mendapatkan motivasi hari ini! ✨
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ice Breaking -->
+                <div class="bg-orange-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-orange-700 mb-4">6. Ice Breaking - Mari Bermain!</h3>
+                    <div class="text-center">
+                        <p class="text-gray-700 mb-4">Yuk main game seru untuk mengawali pembelajaran:</p>
+                       
+                        <iframe style="max-width:100%" src="https://wordwall.net/id/embed/61d822034ede43e39ee4d34d9a8df7ec?themeId=2&templateId=10&fontStackId=1" width="500" height="380" frameborder="0" allowfullscreen></iframe>
+                       
+
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-4">
+                            <div class="flex items-center justify-center mb-3">
+                                <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <span class="text-purple-700 font-medium">Game tidak bisa dimainkan?</span>
+                            </div>
+                            <p class="text-sm text-purple-600 mb-3">Jika game tidak muncul atau tidak bisa dimainkan, berarti device Anda tidak support embed. Gunakan tombol di bawah untuk membuka di Wordwall:</p>
+                            <a href="https://wordwall.net/id/resource/62602423/ice-breaking/mencari-kata" target="_blank" rel="noopener noreferrer" class="inline-flex items-center bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.5a2.5 2.5 0 010 5H9m4.5-5H15a2.5 2.5 0 010 5h-1.5m-5-5v5m5-5v5"></path>
+                                </svg>
+                                Buka Game
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between items-center mt-8 p-4 bg-gray-50 rounded-lg">
+                <div class="flex-1">
+                    <!-- No previous button for first section -->
+                </div>
+                <div class="text-center">
+                    <span class="text-sm text-gray-500">Halaman 1 dari 3</span>
+                </div>
+                <div class="flex-1 text-right">
+                    <button onclick="showSection('kegiatan-inti')" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ml-auto">
+                        <span>Selanjutnya</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KEGIATAN INTI SECTION -->
+        <div id="kegiatan-inti" class="section section-hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-3xl font-bold text-center text-blue-600 mb-6">📖 KEGIATAN INTI PEMBELAJARAN</h2>
+                
+                <!-- Tujuan & Capaian Pembelajaran -->
+                <div class="bg-gradient-to-r from-blue-50 to-emerald-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-6 text-center">🎯 Tujuan & Capaian Pembelajaran</h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Tujuan Pembelajaran -->
+                        <div class="bg-white rounded-lg p-4 border-l-4 border-blue-400">
+                            <h4 class="font-semibold text-blue-600 mb-3">📋 Tujuan Pembelajaran</h4>
+                            <p class="text-sm text-gray-600 mb-3">Setelah pembelajaran ini, siswa dapat:</p>
+                            <ul class="text-sm text-gray-700 space-y-2">
+                                <li>• <strong>Memahami</strong> komponen dasar sistem komputer (hardware & software)</li>
+                                <li>• <strong>Menjelaskan</strong> fungsi dan cara kerja perangkat komputer</li>
+                                <li>• <strong>Mengidentifikasi</strong> jenis-jenis perangkat input, proses, dan output</li>
+                                <li>• <strong>Menerapkan</strong> pengetahuan untuk mengatasi masalah komputer sederhana</li>
+                                <li>• <strong>Menggunakan</strong> komputer dengan aman dan bertanggung jawab</li>
+                            </ul>
+                        </div>
+
+                        <!-- Capaian Pembelajaran -->
+                        <div class="bg-white rounded-lg p-4 border-l-4 border-green-400">
+                            <h4 class="font-semibold text-green-600 mb-3">🏆 Capaian Pembelajaran</h4>
+                            <p class="text-sm text-gray-600 mb-4">Klik untuk menandai capaian yang sudah dikuasai:</p>
+                            
+                            <div class="space-y-3 mb-4">
+                                <!-- Capaian 1 -->
+                                <div class="achievement-item bg-gray-50 rounded-lg p-3 border border-green-200 cursor-pointer hover:bg-green-50 transition-all duration-300" onclick="toggleAchievement('achievement-1')">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-2" id="achievement-1-icon">
+                                                <span class="text-green-600 text-sm">💻</span>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-semibold text-gray-800 text-sm">Mengenal Komponen Komputer</h5>
+                                                <p class="text-xs text-gray-600">Hardware & software</p>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-status" id="achievement-1-status">
+                                            <span class="text-gray-400">⭕</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Capaian 2 -->
+                                <div class="achievement-item bg-gray-50 rounded-lg p-3 border border-green-200 cursor-pointer hover:bg-green-50 transition-all duration-300" onclick="toggleAchievement('achievement-2')">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-2" id="achievement-2-icon">
+                                                <span class="text-green-600 text-sm">🔧</span>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-semibold text-gray-800 text-sm">Memahami Cara Kerja</h5>
+                                                <p class="text-xs text-gray-600">Input, proses, output</p>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-status" id="achievement-2-status">
+                                            <span class="text-gray-400">⭕</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Capaian 3 -->
+                                <div class="achievement-item bg-gray-50 rounded-lg p-3 border border-green-200 cursor-pointer hover:bg-green-50 transition-all duration-300" onclick="toggleAchievement('achievement-3')">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-2" id="achievement-3-icon">
+                                                <span class="text-green-600 text-sm">🛡️</span>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-semibold text-gray-800 text-sm">Menggunakan dengan Aman</h5>
+                                                <p class="text-xs text-gray-600">Keamanan & perawatan</p>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-status" id="achievement-3-status">
+                                            <span class="text-gray-400">⭕</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Progress Capaian -->
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-gray-700">Progress Pembelajaran</span>
+                                    <span class="text-xs text-gray-600" id="achievement-progress">0/3 capaian tercapai</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-500" id="achievement-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-center items-center mt-2">
+                                    <div class="text-center">
+                                        <span class="text-lg" id="achievement-emoji">🎯</span>
+                                        <div class="text-xs text-gray-600 mt-1" id="achievement-level">Mulai Belajar</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tahukah Anda -->
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-purple-700 mb-4">🤔 Tahukah Anda?</h3>
+                    <div class="bg-white rounded-lg p-4 mb-4">
+                        <div id="fun-fact-content" class="text-center">
+                            <div class="text-4xl mb-3">💡</div>
+                            <p class="text-gray-600">Klik tombol di bawah untuk mendapatkan fakta menarik seputar teknologi!</p>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button onclick="getRandomFunFact()" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            🎲 Fakta Menarik Baru
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Intermezzo Game -->
+                <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-orange-700 mb-4">🎮 Intermezzo - Mini Game</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- Quiz Kilat -->
+                        <div class="bg-white rounded-lg p-4 border border-orange-200">
+                            <h4 class="font-semibold text-orange-600 mb-3">⚡ Quiz Kilat</h4>
+                            <div id="quick-quiz" class="text-center">
+                                <div id="quiz-question" class="mb-4 text-gray-700">
+                                    Siap untuk quiz kilat? Klik tombol untuk memulai!
+                                </div>
+                                <div id="quiz-options" class="space-y-2 mb-4 hidden">
+                                    <!-- Options will be inserted here -->
+                                </div>
+                                <button onclick="startQuickQuiz()" id="quiz-start-btn" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors">
+                                    🚀 Mulai Quiz
+                                </button>
+                                <div id="quiz-result" class="mt-3 hidden"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tebak Gambar -->
+                        <div class="bg-white rounded-lg p-4 border border-yellow-200">
+                            <h4 class="font-semibold text-yellow-600 mb-3">🖼️ Tebak Komponen</h4>
+                            <div id="guess-game" class="text-center">
+                                <div id="component-display" class="mb-4">
+                                    <div class="text-6xl mb-2">💻</div>
+                                    <p class="text-gray-600">Klik untuk memulai permainan tebak komponen komputer!</p>
+                                </div>
+                                <button onclick="startGuessGame()" id="guess-start-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors">
+                                    🎯 Mulai Tebak
+                                </button>
+                                <div id="guess-result" class="mt-3 hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Penjelasan Guru -->
+                <div class="bg-blue-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-4">Penjelasan Materi dari Guru</h3>
+                    <div class="text-center">
+                        <p class="text-gray-700 mb-4">Silakan tonton video pembelajaran berikut dengan seksama:</p>
+                        <iframe width="100%" height="400" src="https://www.youtube.com/embed/gSImFfrlsE0" frameborder="0" allowfullscreen class="rounded-lg shadow-md mb-4"></iframe>
+                        
+                        <!-- Tombol Alternatif -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+                            <div class="flex items-center justify-center mb-3">
+                                <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <span class="text-yellow-700 font-medium">Video tidak bisa diputar?</span>
+                            </div>
+                            <p class="text-sm text-yellow-600 mb-3">Jika video tidak diputar otomatis, berarti device Anda tidak support embed. Gunakan tombol di bawah untuk membuka di platform aslinya:</p>
+                            <a href="https://www.youtube.com/watch?v=gSImFfrlsE0" target="_blank" rel="noopener noreferrer" class="inline-flex items-center bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                                Buka di YouTube
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Latihan Soal -->
+                <div class="bg-green-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-green-700 mb-4">Latihan Soal - Cek Pemahaman</h3>
+                    <div class="text-center">
+                        <p class="text-gray-700 mb-4">Setelah menonton video, mari kerjakan soal untuk mengecek pemahaman:</p>
+                        <iframe src="https://wayground.com/join?gc=62677514" width="100%" height="500" frameborder="0" class="rounded-lg shadow-md mb-4"></iframe>
+                        
+                        <!-- Tombol Alternatif -->
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mt-4">
+                            <div class="flex items-center justify-center mb-3">
+                                <svg class="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <span class="text-orange-700 font-medium">Latihan soal tidak muncul?</span>
+                            </div>
+                            <p class="text-sm text-orange-600 mb-3">Jika frame latihan soal tidak muncul, berarti device Anda tidak support embed. Gunakan tombol di bawah untuk membuka di halaman aslinya:</p>
+                            <a href="https://wayground.com/join?gc=62677514" target="_blank" rel="noopener noreferrer" class="inline-flex items-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Buka Latihan Soal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diskusi & Tanya Jawab -->
+                <div class="bg-indigo-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-indigo-700 mb-4">💬 Diskusi & Tanya Jawab</h3>
+                    <div class="text-center mb-4">
+                        <p class="text-gray-700 mb-4">Setelah mengerjakan latihan soal, ada pertanyaan atau ingin berdiskusi? Lihat Asisten AI di sidebar kiri!</p>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-center justify-center mb-2">
+                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-blue-700 font-medium">💡 Tips</span>
+                            </div>
+                            <p class="text-sm text-blue-600">Asisten AI tersedia di sidebar kiri bawah. Klik tombol pertanyaan cepat atau ketik langsung untuk mendapatkan bantuan!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Questions -->
+                    <div class="grid md:grid-cols-2 gap-4 mt-6">
+                        <div class="bg-white p-4 rounded-lg border border-indigo-200">
+                            <h4 class="font-semibold text-indigo-600 mb-2">🤔 Pertanyaan Sistem Komputer</h4>
+                            <div class="space-y-2">
+                                <button onclick="askSidebarQuestion('Apa perbedaan antara hardware dan software komputer?')" class="text-left text-sm text-gray-600 hover:text-indigo-600 transition-colors block w-full">
+                                    • Hardware vs Software
+                                </button>
+                                <button onclick="askSidebarQuestion('Bagaimana cara kerja CPU dan RAM dalam komputer?')" class="text-left text-sm text-gray-600 hover:text-indigo-600 transition-colors block w-full">
+                                    • Cara kerja CPU dan RAM
+                                </button>
+                                <button onclick="askSidebarQuestion('Apa itu operating system dan fungsinya?')" class="text-left text-sm text-gray-600 hover:text-indigo-600 transition-colors block w-full">
+                                    • Operating System
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg border border-indigo-200">
+                            <h4 class="font-semibold text-indigo-600 mb-2">📚 Bantuan Teknis</h4>
+                            <div class="space-y-2">
+                                <button onclick="askSidebarQuestion('Bagaimana cara setting jaringan WiFi di komputer?')" class="text-left text-sm text-gray-600 hover:text-indigo-600 transition-colors block w-full">
+                                    • Setting jaringan WiFi
+                                </button>
+                                <button onclick="askSidebarQuestion('Tips melindungi komputer dari virus dan malware')" class="text-left text-sm text-gray-600 hover:text-indigo-600 transition-colors block w-full">
+                                    • Keamanan dari virus
+                                </button>
+                                <button onclick="askSidebarQuestion('Komputer lambat, bagaimana cara mempercepat?')" class="text-left text-sm text-gray-600 hover:text-indigo-600 transition-colors block w-full">
+                                    • Mengatasi komputer lambat
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips & Tricks -->
+                <div class="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-cyan-700 mb-4">💡 Tips & Tricks</h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg p-4 border-l-4 border-cyan-400 hover:shadow-md transition-shadow cursor-pointer" onclick="showTip('performance')">
+                            <div class="text-2xl mb-2">⚡</div>
+                            <h4 class="font-semibold text-cyan-600 mb-2">Performa Komputer</h4>
+                            <p class="text-sm text-gray-600">Tips mempercepat komputer yang lambat</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 border-l-4 border-blue-400 hover:shadow-md transition-shadow cursor-pointer" onclick="showTip('security')">
+                            <div class="text-2xl mb-2">🔒</div>
+                            <h4 class="font-semibold text-blue-600 mb-2">Keamanan Data</h4>
+                            <p class="text-sm text-gray-600">Cara melindungi data pribadi</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 border-l-4 border-indigo-400 hover:shadow-md transition-shadow cursor-pointer" onclick="showTip('maintenance')">
+                            <div class="text-2xl mb-2">🛠️</div>
+                            <h4 class="font-semibold text-indigo-600 mb-2">Perawatan Rutin</h4>
+                            <p class="text-sm text-gray-600">Maintenance komputer yang efektif</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Tip Display Area -->
+                    <div id="tip-display" class="mt-4 bg-white rounded-lg p-4 border border-gray-200 hidden">
+                        <div id="tip-content">
+                            <!-- Tip content will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between items-center mt-8 p-4 bg-gray-50 rounded-lg">
+                <div class="flex-1">
+                    <button onclick="showSection('pendahuluan')" class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        <span>Sebelumnya</span>
+                    </button>
+                </div>
+                <div class="text-center">
+                    <span class="text-sm text-gray-500">Halaman 2 dari 3</span>
+                </div>
+                <div class="flex-1 text-right">
+                    <button onclick="showSection('penutup')" class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ml-auto">
+                        <span>Selanjutnya</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PENUTUP SECTION -->
+        <div id="penutup" class="section section-hidden">
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                <h2 class="text-3xl font-bold text-center text-purple-600 mb-6">🎯 PENUTUP</h2>
+                
+                <!-- Refleksi Pembelajaran -->
+                <div class="bg-purple-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-purple-700 mb-4">📝 Refleksi Pembelajaran</h3>
+                    <div class="text-center">
+                        <p class="text-gray-700 mb-4">Silakan isi refleksi pembelajaran untuk mengukur pemahaman materi hari ini:</p>
+                        <iframe src="https://wayground.com/join?gc=64926218" width="100%" height="500" frameborder="0" class="rounded-lg shadow-md mb-4"></iframe>
+                        
+                        <!-- Tombol Alternatif -->
+                        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mt-4">
+                            <div class="flex items-center justify-center mb-3">
+                                <svg class="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <span class="text-indigo-700 font-medium">Form refleksi tidak muncul?</span>
+                            </div>
+                            <p class="text-sm text-indigo-600 mb-3">Jika form refleksi tidak muncul, berarti device Anda tidak support embed. Gunakan tombol di bawah untuk membuka di halaman aslinya:</p>
+                            <a href="https://wayground.com/join?gc=64926218" target="_blank" rel="noopener noreferrer" class="inline-flex items-center bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Buka Form Refleksi
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Umpan Balik & Penguatan Nilai PSE -->
+                <div class="bg-yellow-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-yellow-700 mb-4">Penguatan Nilai PSE</h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-lg border-l-4 border-red-400">
+                            <h4 class="font-semibold text-red-600 mb-2">❤️ PEDULI</h4>
+                            <p class="text-sm text-gray-600">"Kepedulian membuat dunia lebih baik. Terus peduli pada sesama!"</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border-l-4 border-blue-400">
+                            <h4 class="font-semibold text-blue-600 mb-2">⏰ DISIPLIN</h4>
+                            <p class="text-sm text-gray-600">"Disiplin adalah kunci kesuksesan. Pertahankan kedisiplinanmu!"</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border-l-4 border-green-400">
+                            <h4 class="font-semibold text-green-600 mb-2">🎯 TANGGUNG JAWAB</h4>
+                            <p class="text-sm text-gray-600">"Bertanggung jawab menunjukkan kedewasaan. Terus tingkatkan!"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Apresiasi -->
+                <div class="bg-green-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-green-700 mb-4">Apresiasi</h3>
+                    <div class="text-center">
+                        <div class="text-4xl mb-4">🏆</div>
+                        <h4 class="text-lg font-semibold text-green-600 mb-2">Selamat!</h4>
+                        <p class="text-gray-700">Kalian telah menyelesaikan pembelajaran hari ini dengan baik. Guru bangga dengan semangat belajar kalian!</p>
+                    </div>
+                </div>
+
+                <!-- Doa Penutup -->
+                <div class="bg-indigo-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-indigo-700 mb-4">Doa & Salam Penutup</h3>
+                    <p class="text-gray-600 mb-4 text-center">Pilih agama/kepercayaan Anda untuk berdoa penutup:</p>
+                    
+                    <!-- Tombol Pilihan Agama -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                        <button onclick="showClosingPrayer('islam')" class="prayer-btn bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            🕌 Islam
+                        </button>
+                        <button onclick="showClosingPrayer('kristen')" class="prayer-btn bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            ✝️ Kristen
+                        </button>
+                        <button onclick="showClosingPrayer('katolik')" class="prayer-btn bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            ⛪ Katolik
+                        </button>
+                        <button onclick="showClosingPrayer('hindu')" class="prayer-btn bg-yellow-500 hover:bg-yellow-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            🕉️ Hindu
+                        </button>
+                        <button onclick="showClosingPrayer('buddha')" class="prayer-btn bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            ☸️ Buddha
+                        </button>
+                        <button onclick="showClosingPrayer('konghucu')" class="prayer-btn bg-red-500 hover:bg-red-600 text-white p-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                            ☯️ Konghucu
+                        </button>
+                    </div>
+
+                    <!-- Area Tampilan Doa Penutup -->
+                    <div id="closing-prayer-display" class="bg-white rounded-lg p-6 border-2 border-gray-200 min-h-32 hidden">
+                        <div id="closing-prayer-content" class="text-center">
+                            <!-- Konten doa penutup akan muncul di sini -->
+                        </div>
+                    </div>
+
+                    <!-- Pesan Default -->
+                    <div id="closing-prayer-default" class="text-center text-gray-500 py-8">
+                        <div class="text-4xl mb-3">🙏</div>
+                        <p>Silakan pilih agama/kepercayaan Anda untuk doa penutup</p>
+                    </div>
+                    
+                    <!-- Salam Penutup Universal -->
+                    <div class="mt-6 text-center space-y-3 bg-white rounded-lg p-4">
+                        <p class="text-lg text-gray-700 font-medium">Terima kasih atas pembelajaran hari ini</p>
+                        <p class="text-base text-gray-600">Sampai jumpa di pembelajaran selanjutnya! 👋</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between items-center mt-8 p-4 bg-gray-50 rounded-lg">
+                <div class="flex-1">
+                    <button onclick="showSection('kegiatan-inti')" class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        <span>Sebelumnya</span>
+                    </button>
+                </div>
+                <div class="text-center">
+                    <span class="text-sm text-gray-500">Halaman 3 dari 3</span>
+                </div>
+                <div class="flex-1 text-right">
+                    <button onclick="showSection('pendahuluan')" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center space-x-2 ml-auto">
+                        <span>Mulai Lagi</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Overlay -->
+    <div id="chatbot-overlay" class="chatbot-overlay" onclick="closeChatbot()"></div>
+
+    <!-- Chatbot Container -->
+    <div id="chatbot-container" class="chatbot-container">
+        <div class="chatbot-header">
+            <button class="chatbot-close" onclick="closeChatbot()">×</button>
+            <div class="flex items-center justify-center">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-3">
+                    <span class="text-2xl">🤖</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg">Asisten AI</h3>
+                    <p class="text-sm opacity-90">Sistem Komputer</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="chatbot-messages" class="chatbot-messages">
+            <div class="chatbot-message bot">
+                Halo! Saya asisten pembelajaran Sistem Komputer yang siap membantu 24/7! 🚀
+                
+                Silakan bertanya seputar:
+                • Hardware & Software 💻
+                • Jaringan Komputer 🌐
+                • Keamanan Sistem 🔒
+                • Programming & Database 💾
+                • Troubleshooting ⚙️
+                
+                Ada yang bisa saya bantu hari ini?
+            </div>
+        </div>
+        
+        <div class="chatbot-input-area">
+            <div class="chatbot-input-container">
+                <input 
+                    type="text" 
+                    id="chatbot-input" 
+                    class="chatbot-input" 
+                    placeholder="Ketik pertanyaan Anda..." 
+                    onkeypress="handleChatKeyPress(event)"
+                >
+                <button class="chatbot-send" onclick="sendMessage()">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mobileSidebarOpen = false;
+        let sidebarAIMinimized = false;
+        let chatbotOpen = false;
+        let commitments = {
+            fokus: false,
+            kerjasama: false,
+            semangat: false
+        };
+
+        function toggleChatbot() {
+            const container = document.getElementById('chatbot-container');
+            const overlay = document.getElementById('chatbot-overlay');
+            
+            chatbotOpen = !chatbotOpen;
+            
+            if (chatbotOpen) {
+                container.classList.add('active');
+                overlay.classList.add('active');
+                // Focus on input when opened
+                setTimeout(() => {
+                    document.getElementById('chatbot-input').focus();
+                }, 300);
+            } else {
+                container.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
+
+        function closeChatbot() {
+            const container = document.getElementById('chatbot-container');
+            const overlay = document.getElementById('chatbot-overlay');
+            
+            chatbotOpen = false;
+            container.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatbot-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Show typing indicator
+            const typingDiv = addMessage('🤖 Sedang mengetik...', 'bot typing-indicator');
+            
+            try {
+                // Call Google Gemini API
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-goog-api-key': 'AIzaSyApvPkpEnml7XCpFpI3F_yQMrpGa7X4iC8',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `Kamu adalah asisten pembelajaran Sistem Komputer yang sangat responsif dan cerdas. Kamu HANYA menjawab pertanyaan seputar sistem komputer seperti hardware, software, jaringan, keamanan, programming, database, multimedia, dan troubleshooting. Jika ditanya tentang mata pelajaran lain (matematika, bahasa, sejarah, dll), tolak dengan sopan dan arahkan ke topik sistem komputer. Berikan jawaban yang detail, praktis, dan mudah dipahami. Gunakan emoji yang relevan dan format yang rapi.
+
+Pertanyaan: ${message}`
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                typingDiv.remove();
+                
+                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    const aiResponse = data.candidates[0].content.parts[0].text;
+                    addMessage(aiResponse, 'bot');
+                } else {
+                    // Fallback to local response if API fails
+                    const fallbackResponse = generateSmartResponse(message);
+                    addMessage(fallbackResponse, 'bot');
+                }
+            } catch (error) {
+                // Remove typing indicator
+                typingDiv.remove();
+                
+                // Fallback to local response if API fails
+                const fallbackResponse = generateSmartResponse(message);
+                addMessage(fallbackResponse, 'bot');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatbot-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chatbot-message ${sender}`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return messageDiv;
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.add('section-hidden');
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionName);
+            targetSection.classList.remove('section-hidden');
+            
+            // Update sidebar active state
+            const stepItems = document.querySelectorAll('.step-item');
+            stepItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.step === sectionName) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Close mobile sidebar after selection
+            if (window.innerWidth <= 768 && mobileSidebarOpen) {
+                toggleMobileSidebar();
+            }
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            
+            mobileSidebarOpen = !mobileSidebarOpen;
+            
+            if (mobileSidebarOpen) {
+                sidebar.classList.add('mobile-open');
+            } else {
+                sidebar.classList.remove('mobile-open');
+            }
+        }
+
+        function toggleSidebarAI() {
+            const aiContent = document.getElementById('sidebar-ai-content');
+            const toggleBtn = document.getElementById('sidebar-ai-toggle');
+            
+            sidebarAIMinimized = !sidebarAIMinimized;
+            
+            if (sidebarAIMinimized) {
+                aiContent.classList.add('minimized');
+                toggleBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>';
+            } else {
+                aiContent.classList.remove('minimized');
+                toggleBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
+                // Focus on input when expanded
+                setTimeout(() => {
+                    document.getElementById('sidebar-chat-input').focus();
+                }, 300);
+            }
+        }
+
+
+
+        function askSidebarQuestion(question) {
+            // Expand AI assistant if minimized
+            if (sidebarAIMinimized) {
+                toggleSidebarAI();
+            }
+            
+            // Wait a bit for animation, then send the question
+            setTimeout(() => {
+                const input = document.getElementById('sidebar-chat-input');
+                input.value = question;
+                sendSidebarMessage();
+            }, 300);
+        }
+
+        async function sendSidebarMessage() {
+            const input = document.getElementById('sidebar-chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addSidebarMessage(message, 'user');
+            input.value = '';
+            
+            // Show typing indicator
+            const typingDiv = addSidebarMessage('🤖 Sedang mengetik...', 'bot typing-indicator');
+            
+            try {
+                // Call Google Gemini API
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-goog-api-key': 'AIzaSyApvPkpEnml7XCpFpI3F_yQMrpGa7X4iC8',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `Kamu adalah asisten pembelajaran Sistem Komputer yang sangat responsif dan cerdas. Kamu HANYA menjawab pertanyaan seputar sistem komputer seperti hardware, software, jaringan, keamanan, programming, database, multimedia, dan troubleshooting. Jika ditanya tentang mata pelajaran lain (matematika, bahasa, sejarah, dll), tolak dengan sopan dan arahkan ke topik sistem komputer. Berikan jawaban yang detail, praktis, dan mudah dipahami. Gunakan emoji yang relevan dan format yang rapi.
+
+Pertanyaan: ${message}`
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                typingDiv.remove();
+                
+                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    const aiResponse = data.candidates[0].content.parts[0].text;
+                    addSidebarMessage(aiResponse, 'bot');
+                } else {
+                    // Fallback to local response if API fails
+                    const fallbackResponse = generateSmartResponse(message);
+                    addSidebarMessage(fallbackResponse, 'bot');
+                }
+            } catch (error) {
+                // Remove typing indicator
+                typingDiv.remove();
+                
+                // Fallback to local response if API fails
+                const fallbackResponse = generateSmartResponse(message);
+                addSidebarMessage(fallbackResponse, 'bot');
+            }
+        }
+
+        function addSidebarMessage(text, sender) {
+            const messagesContainer = document.getElementById('sidebar-chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `sidebar-ai-message ${sender}`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return messageDiv;
+        }
+
+        function handleSidebarChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendSidebarMessage();
+            }
+        }
+
+
+
+        function generateSmartResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Keyword detection focused on computer systems
+            const keywords = {
+                greeting: ['halo', 'hai', 'hello', 'hi', 'selamat', 'pagi', 'siang', 'sore', 'malam', 'assalamualaikum'],
+                hardware: ['hardware', 'perangkat keras', 'cpu', 'processor', 'ram', 'memory', 'motherboard', 'hard disk', 'ssd', 'gpu', 'vga', 'power supply', 'psu', 'keyboard', 'mouse', 'monitor', 'speaker', 'printer', 'scanner'],
+                software: ['software', 'perangkat lunak', 'aplikasi', 'program', 'operating system', 'os', 'windows', 'linux', 'macos', 'android', 'ios', 'driver', 'firmware', 'antivirus', 'browser', 'office'],
+                network: ['jaringan', 'network', 'internet', 'wifi', 'lan', 'wan', 'router', 'switch', 'hub', 'modem', 'ip address', 'dns', 'tcp', 'udp', 'http', 'https', 'ftp', 'bandwidth', 'protokol'],
+                programming: ['programming', 'pemrograman', 'coding', 'bahasa pemrograman', 'python', 'java', 'javascript', 'html', 'css', 'php', 'c++', 'algorithm', 'algoritma', 'database', 'sql', 'web development'],
+                security: ['keamanan', 'security', 'cybersecurity', 'virus', 'malware', 'firewall', 'encryption', 'enkripsi', 'password', 'hacking', 'phishing', 'backup', 'recovery'],
+                data: ['data', 'database', 'big data', 'data mining', 'data analysis', 'cloud computing', 'cloud storage', 'server', 'hosting', 'domain'],
+                multimedia: ['multimedia', 'grafis', 'audio', 'video', 'editing', 'photoshop', 'premiere', 'after effects', 'rendering', 'codec', 'format file'],
+                troubleshooting: ['error', 'masalah', 'trouble', 'perbaikan', 'maintenance', 'update', 'install', 'uninstall', 'crash', 'hang', 'slow', 'lemot'],
+                thanks: ['terima kasih', 'thanks', 'makasih', 'thank you', 'terimakasih'],
+                non_computer: ['matematika', 'bahasa', 'sejarah', 'biologi', 'fisika', 'kimia', 'agama', 'pkn', 'olahraga', 'seni', 'musik']
+            };
+            
+            // Check which category the message belongs to with priority system
+            let category = null;
+            let maxMatches = 0;
+            
+            for (const [cat, words] of Object.entries(keywords)) {
+                const matches = words.filter(word => lowerMessage.includes(word)).length;
+                if (matches > maxMatches) {
+                    maxMatches = matches;
+                    category = cat;
+                }
+            }
+            
+            // Check for non-computer topics first
+            if (keywords.non_computer.some(word => lowerMessage.includes(word))) {
+                return '🤖 Maaf, saya adalah asisten khusus untuk pembelajaran Sistem Komputer. Saya hanya bisa membantu dengan topik-topik seperti:\n\n💻 **Hardware & Software**\n🌐 **Jaringan Komputer**\n🔒 **Keamanan Sistem**\n💾 **Database & Data**\n🎨 **Multimedia**\n⚙️ **Troubleshooting**\n\nSilakan tanyakan hal-hal seputar sistem komputer, dan saya akan dengan senang hati membantu! 😊';
+            }
+
+            // Generate responses based on computer system categories
+            switch (category) {
+                case 'greeting':
+                    const greetings = [
+                        '👋 Halo! Saya asisten pembelajaran Sistem Komputer yang siap membantu 24/7! Mau belajar tentang hardware, software, jaringan, atau topik komputer lainnya?',
+                        '🌟 Hai! Selamat datang di pembelajaran Sistem Komputer! Saya di sini untuk membantu dengan semua pertanyaan seputar teknologi komputer. Ada yang bisa saya bantu?',
+                        '😊 Hello! Saya asisten AI khusus Sistem Komputer yang responsif dan cerdas. Siap membantu kamu memahami dunia teknologi!',
+                        '🚀 Assalamualaikum! Saya asisten pembelajaran Sistem Komputer. Mari kita eksplorasi dunia teknologi bersama!'
+                    ];
+                    return greetings[Math.floor(Math.random() * greetings.length)];
+                
+                case 'hardware':
+                    const hardwareResponses = [
+                        '🔧 Hardware adalah jantung dari sistem komputer! Mari kita pelajari komponen-komponennya:\n\n💻 **Komponen Utama:**\n• **CPU/Processor**: Otak komputer yang memproses data\n• **RAM/Memory**: Penyimpanan sementara untuk data aktif\n• **Motherboard**: Papan induk yang menghubungkan semua komponen\n• **Storage**: Hard Disk/SSD untuk penyimpanan permanen\n• **GPU/VGA**: Memproses grafis dan visual\n• **Power Supply**: Menyediakan daya listrik\n\n🔍 Komponen mana yang ingin dipelajari lebih detail?',
+                        '⚙️ Perangkat keras komputer bekerja seperti orkestra yang harmonis!\n\n🎯 **Fungsi Utama Hardware:**\n• **Input Device**: Keyboard, mouse, microphone\n• **Processing Unit**: CPU, GPU untuk pemrosesan\n• **Memory**: RAM untuk akses cepat, storage untuk penyimpanan\n• **Output Device**: Monitor, speaker, printer\n• **Motherboard**: Menghubungkan semua komponen\n\n💡 Mau tahu cara kerja komponen tertentu atau tips memilih hardware yang tepat?'
+                    ];
+                    return hardwareResponses[Math.floor(Math.random() * hardwareResponses.length)];
+
+                case 'software':
+                    return '💾 Software adalah nyawa yang menghidupkan hardware komputer!\n\n🌟 **Kategori Software:**\n• **System Software**: Operating System (Windows, Linux, macOS)\n• **Application Software**: Program untuk tugas tertentu (Office, Browser, Game)\n• **Programming Software**: Tools untuk membuat program (IDE, Compiler)\n• **Driver Software**: Penghubung hardware dengan OS\n• **Utility Software**: Tools maintenance (Antivirus, Cleaner)\n\n🔧 **Fungsi Operating System:**\n• Mengelola hardware dan resource\n• Menyediakan interface untuk user\n• Menjalankan aplikasi\n• Mengatur file dan folder\n\n💻 Ada software tertentu yang ingin dipelajari lebih dalam?';
+
+                case 'network':
+                    return '🌐 Jaringan komputer menghubungkan dunia digital!\n\n📡 **Jenis Jaringan:**\n• **LAN**: Local Area Network (dalam satu gedung)\n• **WAN**: Wide Area Network (antar kota/negara)\n• **Internet**: Jaringan global terbesar\n• **WiFi**: Jaringan nirkabel\n\n🔧 **Komponen Jaringan:**\n• **Router**: Mengarahkan data antar jaringan\n• **Switch**: Menghubungkan device dalam LAN\n• **Modem**: Mengubah sinyal digital-analog\n• **Access Point**: Titik akses WiFi\n\n📊 **Protokol Penting:**\n• TCP/IP, HTTP/HTTPS, FTP, DNS\n\n🤔 Mau belajar tentang konfigurasi jaringan atau troubleshooting koneksi?';
+
+                case 'programming':
+                    return '💻 Programming adalah seni menciptakan solusi digital!\n\n🚀 **Bahasa Pemrograman Populer:**\n• **Python**: Mudah dipelajari, cocok untuk AI/Data Science\n• **JavaScript**: Untuk web development\n• **Java**: Platform independent, untuk enterprise\n• **C++**: Performance tinggi, untuk system programming\n• **HTML/CSS**: Untuk struktur dan styling web\n• **SQL**: Untuk database management\n\n🎯 **Konsep Dasar Programming:**\n• Algorithm & Logic\n• Variables & Data Types\n• Control Structures (if, loop)\n• Functions & Procedures\n• Object-Oriented Programming\n\n📚 Mau mulai belajar bahasa pemrograman tertentu atau konsep algoritma?';
+
+                case 'security':
+                    return '🔒 Keamanan sistem komputer sangat penting di era digital!\n\n⚠️ **Ancaman Keamanan:**\n• **Virus & Malware**: Program jahat yang merusak sistem\n• **Phishing**: Penipuan untuk mencuri data pribadi\n• **Hacking**: Akses ilegal ke sistem\n• **Ransomware**: Mengenkripsi data untuk tebusan\n\n🛡️ **Langkah Perlindungan:**\n• Install antivirus yang terpercaya\n• Update sistem dan software secara rutin\n• Gunakan password yang kuat dan unik\n• Backup data secara berkala\n• Hati-hati dengan email dan link mencurigakan\n• Gunakan firewall dan VPN\n\n🔐 Mau belajar tentang enkripsi, password security, atau cara mendeteksi malware?';
+
+                case 'data':
+                    return '💾 Data adalah aset berharga di era informasi!\n\n📊 **Jenis Data:**\n• **Structured Data**: Database relational (SQL)\n• **Unstructured Data**: Teks, gambar, video\n• **Big Data**: Volume data yang sangat besar\n• **Metadata**: Data tentang data\n\n🏗️ **Database Management:**\n• **RDBMS**: MySQL, PostgreSQL, Oracle\n• **NoSQL**: MongoDB, Cassandra\n• **Cloud Database**: AWS RDS, Google Cloud SQL\n\n☁️ **Cloud Computing:**\n• **SaaS**: Software as a Service\n• **PaaS**: Platform as a Service\n• **IaaS**: Infrastructure as a Service\n\n📈 Mau belajar tentang database design, SQL queries, atau cloud storage?';
+
+                case 'multimedia':
+                    return '🎨 Multimedia menggabungkan teks, gambar, audio, dan video!\n\n🖼️ **Jenis Media Digital:**\n• **Grafis**: Bitmap (JPG, PNG) vs Vector (SVG, AI)\n• **Audio**: WAV, MP3, AAC, FLAC\n• **Video**: MP4, AVI, MOV, WebM\n• **Animasi**: GIF, Flash, CSS Animation\n\n🛠️ **Software Multimedia:**\n• **Image Editing**: Photoshop, GIMP, Canva\n• **Video Editing**: Premiere, Final Cut, DaVinci\n• **Audio Editing**: Audacity, Pro Tools\n• **3D Modeling**: Blender, Maya, 3ds Max\n\n⚙️ **Konsep Teknis:**\n• Resolution, Color Depth, Compression\n• Frame Rate, Bitrate, Codec\n\n🎬 Mau belajar tentang editing, compression, atau format file multimedia?';
+
+                case 'troubleshooting':
+                    return '🔧 Troubleshooting adalah skill penting untuk mengatasi masalah komputer!\n\n🚨 **Masalah Umum & Solusi:**\n• **Komputer Lambat**: Bersihkan file temp, scan virus, upgrade RAM\n• **Blue Screen**: Update driver, cek hardware, scan memory\n• **Tidak Bisa Boot**: Cek kabel power, reset BIOS, repair OS\n• **Internet Lemot**: Restart router, cek bandwidth, update driver\n• **Software Crash**: Update aplikasi, cek compatibility, reinstall\n\n🔍 **Langkah Troubleshooting:**\n1. Identifikasi masalah dengan tepat\n2. Cari penyebab yang paling mungkin\n3. Test solusi satu per satu\n4. Dokumentasikan solusi yang berhasil\n\n💡 Ada masalah spesifik yang sedang dihadapi? Ceritakan gejalanya!';
+
+                case 'thanks':
+                    const thankResponses = [
+                        '😊 Sama-sama! Senang bisa membantu dengan pembelajaran Sistem Komputer. Jangan ragu bertanya lagi!',
+                        '🌟 You\'re welcome! Semangat terus eksplorasi dunia teknologi. Saya selalu siap membantu!',
+                        '💫 Dengan senang hati! Teknologi terus berkembang, mari kita belajar bersama!',
+                        '🤗 Terima kasih kembali! Semoga pengetahuan komputer ini bermanfaat untuk masa depan!'
+                    ];
+                    return thankResponses[Math.floor(Math.random() * thankResponses.length)];
+
+                default:
+                    // Enhanced default responses focused on computer systems
+                    if (lowerMessage.includes('bagaimana') || lowerMessage.includes('kenapa') || lowerMessage.includes('mengapa') || lowerMessage.includes('apa itu')) {
+                        return '🤔 Pertanyaan yang bagus tentang sistem komputer! Rasa ingin tahu adalah kunci memahami teknologi.\n\n💡 Untuk memberikan jawaban yang lebih tepat, coba ceritakan:\n• Topik sistem komputer apa yang dimaksud?\n• Hardware, software, jaringan, atau keamanan?\n• Apa yang sudah kamu ketahui tentang hal tersebut?\n• Masalah teknis apa yang sedang dihadapi?\n\n🎯 Dengan informasi lebih detail, saya bisa memberikan penjelasan sistem komputer yang akurat dan bermanfaat!';
+                    }
+
+                    const defaultResponses = [
+                        '🤖 Terima kasih sudah bertanya! Saya asisten khusus pembelajaran Sistem Komputer yang responsif dan siap membantu 24/7.\n\n💻 **Saya bisa bantu dengan:**\n• Hardware: CPU, RAM, Motherboard, Storage\n• Software: OS, Aplikasi, Driver, Programming\n• Jaringan: LAN, WAN, Internet, Protokol\n• Keamanan: Antivirus, Firewall, Enkripsi\n• Database: SQL, NoSQL, Cloud Storage\n• Multimedia: Grafis, Audio, Video, Editing\n• Troubleshooting: Error, Performance, Maintenance\n\n💬 Coba ceritakan topik sistem komputer apa yang ingin dipelajari?',
+                        
+                        '🌟 Halo! Saya di sini untuk membantu perjalanan belajar Sistem Komputer kamu jadi lebih mudah dan menyenangkan.\n\n🎯 **Topik yang sering ditanyakan:**\n• "Bagaimana cara kerja processor dan RAM?"\n• "Perbedaan antara hardware dan software?"\n• "Cara setting jaringan WiFi dan troubleshooting?"\n• "Tips memilih komponen PC yang tepat?"\n• "Bahasa pemrograman mana yang cocok untuk pemula?"\n• "Cara melindungi komputer dari virus dan malware?"\n\n💡 Ada pertanyaan lain seputar sistem komputer? Silakan tanya, saya siap membantu!',
+                        
+                        '🚀 Senang bisa membantu eksplorasi dunia teknologi komputer! Sistem komputer itu menarik dan terus berkembang.\n\n✨ **Saya siap membantu:**\n• Menjelaskan konsep teknis dengan bahasa sederhana\n• Memberikan tips praktis untuk troubleshooting\n• Membantu memahami teknologi terbaru\n• Menyediakan panduan step-by-step\n• Merekomendasikan tools dan software yang tepat\n\n🤝 Apa aspek sistem komputer yang ingin dipelajari hari ini? Hardware, software, jaringan, atau yang lainnya?'
+                    ];
+                    
+                    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+            }
+        }
+
+
+
+        function selectMood(mood) {
+            const feedbacks = {
+                'senang': '🌟 Wah, senang sekali! Semangat belajarmu pasti luar biasa hari ini!',
+                'sedih': '🤗 Tidak apa-apa merasa sedih. Guru yakin kamu bisa melewatinya dengan baik!',
+                'marah': '😌 Tarik napas dalam-dalam. Mari kita ubah rasa marah menjadi semangat belajar!',
+                'biasa': '👍 Itu normal! Mari kita buat hari ini menjadi lebih menarik dengan belajar!'
+            };
+            
+            const feedbackDiv = document.getElementById('mood-feedback');
+            feedbackDiv.textContent = feedbacks[mood];
+            feedbackDiv.classList.remove('hidden');
+            
+            // Add animation
+            feedbackDiv.style.animation = 'fadeIn 0.5s ease-in';
+        }
+
+        function showPrayer(religion) {
+            const prayers = {
+                'islam': {
+                    title: '🕌 Doa Pembuka Islam',
+                    arabic: 'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
+                    transliteration: '"Bismillahir-rahmanir-rahim"',
+                    meaning: 'Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang',
+                    arabic2: 'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِّن لِّسَانِي يَفْقَهُوا قَوْلِي',
+                    transliteration2: '"Rabbish-rahli shadri wa yassirli amri wahlul uqdatan min lisani yafqahu qawli"',
+                    meaning2: 'Ya Tuhanku, lapangkanlah dadaku, mudahkanlah urusanku, dan lepaskanlah kekakuan dari lidahku agar mereka mengerti perkataanku',
+                    arabic3: 'رَبِّ زِدْنِي عِلْمًا وَارْزُقْنِي فَهْمًا',
+                    transliteration3: '"Rabbi zidni ilman warzuqni fahman"',
+                    meaning3: 'Ya Tuhanku, tambahkanlah kepadaku ilmu dan berikanlah aku pemahaman',
+                    color: 'border-green-400'
+                },
+                'kristen': {
+                    title: '✝️ Doa Pembuka Kristen',
+                    content: '"Bapa kami yang di surga, dikuduskanlah nama-Mu.<br><br>Tuhan Yesus yang terkasih, berkatilah kami dalam belajar hari ini. Berilah kami hikmat dan pengertian untuk memahami setiap pelajaran yang akan kami terima.<br><br>Roh Kudus, pimpinlah pikiran dan hati kami agar dapat menyerap ilmu dengan baik dan menggunakannya untuk kemuliaan Tuhan dan kebaikan sesama.<br><br>Berkatilah guru-guru kami yang dengan sabar mengajar, dan berkatilah teman-teman sekelas agar kita dapat belajar bersama dalam damai.<br><br>Dalam nama Yesus Kristus kami berdoa. Amin."',
+                    color: 'border-blue-400'
+                },
+                'katolik': {
+                    title: '⛪ Doa Pembuka Katolik',
+                    content: '"Dalam nama Bapa, dan Putera, dan Roh Kudus. Amin.<br><br>Ya Tuhan Yang Maha Kuasa, Pencipta langit dan bumi, kami bersyukur atas kesempatan untuk belajar pada hari ini.<br><br>Berkatilah kegiatan pembelajaran kami. Bukalah pikiran kami untuk menerima ilmu pengetahuan, dan bukalah hati kami untuk menerima kebijaksanaan.<br><br>Semoga ilmu yang kami peroleh dapat kami gunakan untuk kemuliaan-Mu, kebaikan sesama, dan kemajuan dunia.<br><br>Santa Maria, Bunda Kebijaksanaan, doakanlah kami. Santo Yosef, pelindung keluarga, lindungilah kami.<br><br>Dalam nama Yesus Kristus, Tuhan kami. Amin."',
+                    color: 'border-purple-400'
+                },
+                'hindu': {
+                    title: '🕉️ Doa Pembuka Hindu',
+                    sanskrit: 'ॐ गं गणपतये नमः',
+                    transliteration: '"Om Gam Ganapataye Namaha"',
+                    meaning: 'Sembah sujud kepada Ganesha, penghilang rintangan',
+                    sanskrit2: 'ॐ सरस्वत्यै नमः',
+                    transliteration2: '"Om Saraswati Namaha"',
+                    meaning2: 'Sembah sujud kepada Dewi Saraswati, dewi ilmu pengetahuan dan kebijaksanaan',
+                    sanskrit3: 'गुरुर्ब्रह्मा गुरुर्विष्णुः गुरुर्देवो महेश्वरः। गुरुः साक्षात् परं ब्रह्म तस्मै श्री गुरवे नमः॥',
+                    transliteration3: '"Gurur Brahma Gurur Vishnu Gurur Devo Maheshwarah, Guruh Sakshat Param Brahma Tasmai Sri Gurave Namah"',
+                    meaning3: 'Guru adalah Brahma, Guru adalah Wisnu, Guru adalah Dewa Maheshwara. Guru adalah manifestasi Brahman tertinggi. Hormat kepada Guru yang mulia',
+                    color: 'border-yellow-400'
+                },
+                'buddha': {
+                    title: '☸️ Doa Pembuka Buddha',
+                    content: '"Namo Buddhaya, Namo Dharmaya, Namo Sanghaya<br>(Sembah kepada Buddha, Dharma, dan Sangha)<br><br>Semoga semua makhluk berbahagia dan terbebas dari penderitaan.<br><br>Dengan pikiran yang jernih dan hati yang terbuka, kami memulai pembelajaran hari ini. Semoga ilmu yang kami peroleh dapat membawa kebijaksanaan dan welas asih.<br><br>Semoga pembelajaran ini tidak hanya menambah pengetahuan, tetapi juga mengembangkan kebijaksanaan untuk memahami sifat sejati kehidupan.<br><br>Semoga semua makhluk hidup memperoleh kebahagiaan sejati dan mencapai pencerahan.<br><br>Sadhu, Sadhu, Sadhu (Semoga demikian)"',
+                    color: 'border-orange-400'
+                },
+                'konghucu': {
+                    title: '☯️ Doa Pembuka Konghucu',
+                    content: '"Ya Tian (Tuhan Yang Maha Esa), Sumber segala kebijaksanaan dan kebenaran, kami bersujud di hadapan-Mu.<br><br>Berkatilah kami dalam menuntut ilmu pada hari ini. Semoga kami dapat menjadi pribadi yang berbudi luhur, menghormati guru, dan berguna bagi masyarakat.<br><br>Ajarkanlah kami untuk selalu menjunjung tinggi nilai-nilai Ren (cinta kasih), Yi (kebenaran), Li (kesopanan), Zhi (kebijaksanaan), dan Xin (dapat dipercaya).<br><br>Semoga ilmu yang kami peroleh dapat kami gunakan untuk menciptakan harmoni dalam keluarga, masyarakat, dan dunia.<br><br>Dengan rendah hati kami memohon bimbingan-Mu. Xie Xie Tian (Terima kasih Tuhan)."',
+                    color: 'border-red-400'
+                }
+            };
+
+            const prayer = prayers[religion];
+            const prayerDisplay = document.getElementById('prayer-display');
+            const prayerContent = document.getElementById('prayer-content');
+            const prayerDefault = document.getElementById('prayer-default');
+
+            // Hide default message
+            prayerDefault.classList.add('hidden');
+            
+            // Show prayer display
+            prayerDisplay.classList.remove('hidden');
+            prayerDisplay.className = `bg-white rounded-lg p-6 border-2 ${prayer.color} min-h-32`;
+
+            // Build prayer content
+            let content = `<h4 class="font-bold text-lg mb-4">${prayer.title}</h4>`;
+            
+            if (prayer.arabic) {
+                content += `<div class="space-y-4">`;
+                content += `<div class="bg-green-50 p-3 rounded-lg">`;
+                content += `<p class="text-xl text-gray-800 mb-2" style="font-family: 'Amiri', serif; direction: rtl;">${prayer.arabic}</p>`;
+                content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration}</p>`;
+                content += `<p class="text-xs text-gray-500">${prayer.meaning}</p>`;
+                content += `</div>`;
+                
+                if (prayer.arabic2) {
+                    content += `<div class="bg-green-50 p-3 rounded-lg">`;
+                    content += `<p class="text-lg text-gray-800 mb-2" style="font-family: 'Amiri', serif; direction: rtl;">${prayer.arabic2}</p>`;
+                    content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration2}</p>`;
+                    content += `<p class="text-xs text-gray-500">${prayer.meaning2}</p>`;
+                    content += `</div>`;
+                }
+                
+                if (prayer.arabic3) {
+                    content += `<div class="bg-green-50 p-3 rounded-lg">`;
+                    content += `<p class="text-lg text-gray-800 mb-2" style="font-family: 'Amiri', serif; direction: rtl;">${prayer.arabic3}</p>`;
+                    content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration3}</p>`;
+                    content += `<p class="text-xs text-gray-500">${prayer.meaning3}</p>`;
+                    content += `</div>`;
+                }
+                content += `</div>`;
+            } else if (prayer.sanskrit) {
+                content += `<div class="space-y-4">`;
+                content += `<div class="bg-yellow-50 p-3 rounded-lg">`;
+                content += `<p class="text-xl text-gray-800 mb-2" style="font-family: 'Amiri', serif;">${prayer.sanskrit}</p>`;
+                content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration}</p>`;
+                content += `<p class="text-xs text-gray-500">${prayer.meaning}</p>`;
+                content += `</div>`;
+                
+                if (prayer.sanskrit2) {
+                    content += `<div class="bg-yellow-50 p-3 rounded-lg">`;
+                    content += `<p class="text-lg text-gray-800 mb-2" style="font-family: 'Amiri', serif;">${prayer.sanskrit2}</p>`;
+                    content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration2}</p>`;
+                    content += `<p class="text-xs text-gray-500">${prayer.meaning2}</p>`;
+                    content += `</div>`;
+                }
+                
+                if (prayer.sanskrit3) {
+                    content += `<div class="bg-yellow-50 p-3 rounded-lg">`;
+                    content += `<p class="text-base text-gray-800 mb-2" style="font-family: 'Amiri', serif;">${prayer.sanskrit3}</p>`;
+                    content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration3}</p>`;
+                    content += `<p class="text-xs text-gray-500">${prayer.meaning3}</p>`;
+                    content += `</div>`;
+                }
+                content += `</div>`;
+            } else {
+                content += `<p class="text-sm text-gray-600">${prayer.content}</p>`;
+            }
+
+            prayerContent.innerHTML = content;
+            
+            // Add animation
+            prayerDisplay.style.animation = 'fadeIn 0.5s ease-in';
+        }
+
+        function showClosingPrayer(religion) {
+            const closingPrayers = {
+                'islam': {
+                    title: '🕌 Doa Penutup Islam',
+                    arabic: 'الْحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ',
+                    transliteration: '"Alhamdulillahil-ladzi bi ni\'matihi tatimmus-shalihat"',
+                    meaning: 'Segala puji bagi Allah yang dengan nikmat-Nya segala kebaikan menjadi sempurna',
+                    arabic2: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',
+                    transliteration2: '"Alhamdulillahirabbil\'alamiin"',
+                    meaning2: 'Segala puji bagi Allah, Tuhan semesta alam',
+                    arabic3: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+                    transliteration3: '"Rabbana atina fi\'d-dunya hasanatan wa fi\'l-akhirati hasanatan wa qina \'adhab an-nar"',
+                    meaning3: 'Ya Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami dari siksa neraka',
+                    salam: 'وَالسَّلاَمُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ',
+                    salamTranslit: '"Wassalamu\'alaikum Warahmatullahi Wabarakatuh"',
+                    color: 'border-green-400'
+                },
+                'kristen': {
+                    title: '✝️ Doa Penutup Kristen',
+                    content: '"Bapa kami yang di surga, terima kasih atas berkat pembelajaran hari ini.<br><br>Tuhan Yesus yang terkasih, terima kasih telah menyertai kami dalam setiap langkah pembelajaran. Semoga ilmu yang kami peroleh dapat kami gunakan untuk kemuliaan-Mu dan kebaikan sesama.<br><br>Roh Kudus, tetaplah membimbing kami dalam menerapkan ilmu yang telah kami pelajari. Berkatilah keluarga kami di rumah, dan lindungilah perjalanan pulang kami.<br><br>Semoga kasih Tuhan Yesus, kasih karunia Allah Bapa, dan persekutuan Roh Kudus menyertai kami semua. Dalam nama Yesus Kristus kami berdoa. Amin.<br><br><strong>Tuhan memberkati dan melindungi kita semua!</strong>"',
+                    color: 'border-blue-400'
+                },
+                'katolik': {
+                    title: '⛪ Doa Penutup Katolik',
+                    content: '"Dalam nama Bapa, dan Putera, dan Roh Kudus. Amin.<br><br>Ya Tuhan Yang Maha Kuasa, terima kasih atas pembelajaran yang telah Engkau berikan pada hari ini. Kami bersyukur atas segala ilmu dan pengalaman yang telah kami peroleh.<br><br>Semoga ilmu yang kami terima menjadi berkat bagi hidup kami dan dapat kami gunakan untuk melayani sesama dan membangun dunia yang lebih baik.<br><br>Berkatilah keluarga kami di rumah, lindungilah perjalanan kami, dan semoga kami selalu berada dalam kasih dan perlindungan-Mu.<br><br>Santa Maria, Bunda kami, doakanlah kami. Santo Yosef, pelindung keluarga, lindungilah kami. Para santo dan santa, bantulah kami.<br><br>Dalam nama Yesus Kristus, Tuhan kami. Amin.<br><br><strong>Pax et Bonum (Damai dan Kebaikan)</strong>"',
+                    color: 'border-purple-400'
+                },
+                'hindu': {
+                    title: '🕉️ Doa Penutup Hindu',
+                    sanskrit: 'ॐ पूर्णमदः पूर्णमिदं पूर्णात्पूर्णमुदच्यते',
+                    transliteration: '"Om Purnamadah Purnamidam Purnat Purnamudachyate"',
+                    meaning: 'Yang itu sempurna, yang ini sempurna, dari yang sempurna muncul yang sempurna',
+                    sanskrit2: 'ॐ शान्तिः शान्तिः शान्तिः',
+                    transliteration2: '"Om Shanti Shanti Shanti"',
+                    meaning2: 'Semoga damai di pikiran, tubuh, dan jiwa',
+                    sanskrit3: 'सर्वे भवन्तु सुखिनः सर्वे सन्तु निरामयाः। सर्वे भद्राणि पश्यन्तु मा कश्चिद्दुःखभाग्भवेत्॥',
+                    transliteration3: '"Sarve Bhavantu Sukhinah Sarve Santu Niramayah, Sarve Bhadrani Pashyantu Ma Kashchid Dukha Bhag Bhavet"',
+                    meaning3: 'Semoga semua makhluk berbahagia, semoga semua makhluk sehat, semoga semua makhluk melihat kebaikan, semoga tidak ada yang menderita',
+                    closing: 'ॐ तत्सत्',
+                    closingTranslit: '"Om Tat Sat"',
+                    closingMeaning: 'Itulah kebenaran yang sejati',
+                    color: 'border-yellow-400'
+                },
+                'buddha': {
+                    title: '☸️ Doa Penutup Buddha',
+                    content: '"Namo Buddhaya, Namo Dharmaya, Namo Sanghaya<br>(Sembah kepada Buddha, Dharma, dan Sangha)<br><br>Dengan hati yang penuh syukur, kami mengakhiri pembelajaran hari ini. Semoga kebajikan dari pembelajaran ini membawa manfaat bagi semua makhluk hidup.<br><br>Semoga semua makhluk bebas dari penderitaan dan memperoleh kebahagiaan sejati. Semoga semua makhluk hidup dalam damai dan harmoni.<br><br>Semoga ilmu yang kami peroleh dapat kami gunakan dengan bijaksana untuk mengurangi penderitaan di dunia dan meningkatkan kesejahteraan semua makhluk.<br><br>Semoga semua makhluk mencapai pencerahan dan terbebas dari samsara.<br><br><strong>Sadhu, Sadhu, Sadhu</strong> (Semoga demikian)<br><br>Gate Gate Paragate Parasamgate Bodhi Svaha<br>(Pergi, pergi, pergi ke seberang, pergi ke seberang yang jauh, pencerahan, semoga berhasil)"',
+                    color: 'border-orange-400'
+                },
+                'konghucu': {
+                    title: '☯️ Doa Penutup Konghucu',
+                    content: '"Ya Tian (Tuhan Yang Maha Esa), Sumber segala kebijaksanaan dan kebenaran, dengan rendah hati kami mengucapkan syukur atas pembelajaran hari ini.<br><br>Terima kasih telah memberikan kami kesempatan untuk menambah ilmu dan memperluas wawasan. Semoga kami dapat mengamalkan ilmu ini dengan penuh kebijaksanaan.<br><br>Ajarkanlah kami untuk selalu menjunjung tinggi nilai-nilai luhur: Ren (cinta kasih), Yi (kebenaran), Li (kesopanan), Zhi (kebijaksanaan), dan Xin (dapat dipercaya).<br><br>Semoga kami dapat berbakti kepada orang tua, menghormati guru, dan berbuat baik kepada sesama. Semoga ilmu yang kami peroleh dapat kami gunakan untuk menciptakan harmoni dalam keluarga, masyarakat, dan dunia.<br><br>Berkatilah keluarga kami, lindungilah perjalanan kami, dan semoga kami selalu berada di jalan yang benar.<br><br><strong>Xie Xie Tian</strong> (Terima kasih Tuhan)<br><strong>Tian Bless</strong> (Tuhan memberkati)"',
+                    color: 'border-red-400'
+                }
+            };
+
+            const prayer = closingPrayers[religion];
+            const prayerDisplay = document.getElementById('closing-prayer-display');
+            const prayerContent = document.getElementById('closing-prayer-content');
+            const prayerDefault = document.getElementById('closing-prayer-default');
+
+            // Hide default message
+            prayerDefault.classList.add('hidden');
+            
+            // Show prayer display
+            prayerDisplay.classList.remove('hidden');
+            prayerDisplay.className = `bg-white rounded-lg p-6 border-2 ${prayer.color} min-h-32`;
+
+            // Build prayer content
+            let content = `<h4 class="font-bold text-lg mb-4">${prayer.title}</h4>`;
+            
+            if (prayer.arabic) {
+                content += `<div class="space-y-4">`;
+                content += `<div class="bg-green-50 p-3 rounded-lg">`;
+                content += `<p class="text-xl text-gray-800 mb-2" style="font-family: 'Amiri', serif; direction: rtl;">${prayer.arabic}</p>`;
+                content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration}</p>`;
+                content += `<p class="text-xs text-gray-500">${prayer.meaning}</p>`;
+                content += `</div>`;
+                
+                if (prayer.arabic2) {
+                    content += `<div class="bg-green-50 p-3 rounded-lg">`;
+                    content += `<p class="text-lg text-gray-800 mb-2" style="font-family: 'Amiri', serif; direction: rtl;">${prayer.arabic2}</p>`;
+                    content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration2}</p>`;
+                    content += `<p class="text-xs text-gray-500">${prayer.meaning2}</p>`;
+                    content += `</div>`;
+                }
+                
+                if (prayer.arabic3) {
+                    content += `<div class="bg-green-50 p-3 rounded-lg">`;
+                    content += `<p class="text-base text-gray-800 mb-2" style="font-family: 'Amiri', serif; direction: rtl;">${prayer.arabic3}</p>`;
+                    content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration3}</p>`;
+                    content += `<p class="text-xs text-gray-500">${prayer.meaning3}</p>`;
+                    content += `</div>`;
+                }
+                
+                content += `<div class="bg-green-100 p-3 rounded-lg border-2 border-green-300">`;
+                content += `<p class="text-lg text-gray-800 mb-2" style="font-family: 'Amiri', serif; direction: rtl;">${prayer.salam}</p>`;
+                content += `<p class="text-sm text-gray-600 font-medium">${prayer.salamTranslit}</p>`;
+                content += `</div>`;
+                content += `</div>`;
+            } else if (prayer.sanskrit) {
+                content += `<div class="space-y-4">`;
+                content += `<div class="bg-yellow-50 p-3 rounded-lg">`;
+                content += `<p class="text-lg text-gray-800 mb-2" style="font-family: 'Amiri', serif;">${prayer.sanskrit}</p>`;
+                content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration}</p>`;
+                content += `<p class="text-xs text-gray-500">${prayer.meaning}</p>`;
+                content += `</div>`;
+                
+                if (prayer.sanskrit2) {
+                    content += `<div class="bg-yellow-50 p-3 rounded-lg">`;
+                    content += `<p class="text-lg text-gray-800 mb-2" style="font-family: 'Amiri', serif;">${prayer.sanskrit2}</p>`;
+                    content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration2}</p>`;
+                    content += `<p class="text-xs text-gray-500">${prayer.meaning2}</p>`;
+                    content += `</div>`;
+                }
+                
+                if (prayer.sanskrit3) {
+                    content += `<div class="bg-yellow-50 p-3 rounded-lg">`;
+                    content += `<p class="text-sm text-gray-800 mb-2" style="font-family: 'Amiri', serif;">${prayer.sanskrit3}</p>`;
+                    content += `<p class="text-sm text-gray-600 mb-1">${prayer.transliteration3}</p>`;
+                    content += `<p class="text-xs text-gray-500">${prayer.meaning3}</p>`;
+                    content += `</div>`;
+                }
+                
+                if (prayer.closing) {
+                    content += `<div class="bg-yellow-100 p-3 rounded-lg border-2 border-yellow-300">`;
+                    content += `<p class="text-lg text-gray-800 mb-2" style="font-family: 'Amiri', serif;">${prayer.closing}</p>`;
+                    content += `<p class="text-sm text-gray-600 mb-1">${prayer.closingTranslit}</p>`;
+                    content += `<p class="text-xs text-gray-500 font-medium">${prayer.closingMeaning}</p>`;
+                    content += `</div>`;
+                }
+                content += `</div>`;
+            } else {
+                content += `<p class="text-sm text-gray-600">${prayer.content}</p>`;
+            }
+
+            prayerContent.innerHTML = content;
+            
+            // Add animation
+            prayerDisplay.style.animation = 'fadeIn 0.5s ease-in';
+        }
+
+        function saveReflection() {
+            const learning = document.getElementById('reflection-learning').value;
+            const attitude = document.getElementById('reflection-attitude').value;
+            
+            if (learning.trim() && attitude.trim()) {
+                // Simulate saving (in real app, this would send to server)
+                const savedDiv = document.getElementById('reflection-saved');
+                savedDiv.classList.remove('hidden');
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    savedDiv.classList.add('hidden');
+                }, 3000);
+            } else {
+                // Create custom notification instead of alert
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50';
+                notification.textContent = 'Mohon lengkapi kedua bagian refleksi terlebih dahulu!';
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+        }
+
+        // Close mobile sidebar when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = event.target.closest('button[onclick="toggleMobileSidebar()"]');
+            
+            if (mobileSidebarOpen && !sidebar.contains(event.target) && !mobileMenuBtn && window.innerWidth <= 768) {
+                toggleMobileSidebar();
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                // Desktop mode - ensure sidebar is visible and mobile state is reset
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.remove('mobile-open');
+                mobileSidebarOpen = false;
+            }
+        });
+
+        function commitToValue(value) {
+            commitments[value] = !commitments[value];
+            
+            const statusElement = document.getElementById(`${value}-status`);
+            const colors = {
+                fokus: { bg: 'blue', text: 'blue' },
+                kerjasama: { bg: 'green', text: 'green' },
+                semangat: { bg: 'purple', text: 'purple' }
+            };
+            
+            if (commitments[value]) {
+                statusElement.innerHTML = `<div class="text-${colors[value].text}-600 font-semibold">✅ Berkomitmen!</div>`;
+                // Add celebration effect
+                statusElement.style.animation = 'fadeIn 0.5s ease-in';
+            } else {
+                statusElement.innerHTML = `<button class="bg-${colors[value].bg}-500 text-white px-3 py-1 rounded-full text-xs hover:bg-${colors[value].bg}-600 transition-colors">Komitmen</button>`;
+            }
+            
+            updateCommitmentProgress();
+        }
+
+        function updateCommitmentProgress() {
+            const count = Object.values(commitments).filter(Boolean).length;
+            const percentage = (count / 3) * 100;
+            
+            document.getElementById('commitment-count').textContent = count;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            
+            const emojis = ['😊', '😄', '🤩', '🎉'];
+            document.getElementById('progress-emoji').textContent = emojis[count];
+            
+            if (count === 3) {
+                // Celebration when all commitments are made
+                const celebration = document.createElement('div');
+                celebration.className = 'fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50';
+                celebration.innerHTML = '🎉 Luar biasa! Semua komitmen telah dibuat!';
+                document.body.appendChild(celebration);
+                
+                setTimeout(() => {
+                    celebration.remove();
+                }, 3000);
+            }
+        }
+
+        function updateTargetProgress() {
+            const checkboxes = document.querySelectorAll('#target-1, #target-2, #target-3, #target-4');
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            
+            document.getElementById('target-progress').textContent = `Target tercapai: ${checkedCount}/4`;
+            
+            if (checkedCount === 4) {
+                const celebration = document.createElement('div');
+                celebration.className = 'fixed top-4 left-4 bg-orange-500 text-white p-4 rounded-lg shadow-lg z-50';
+                celebration.innerHTML = '🏆 Semua target harian tercapai!';
+                document.body.appendChild(celebration);
+                
+                setTimeout(() => {
+                    celebration.remove();
+                }, 3000);
+            }
+        }
+
+        function getRandomMotivation() {
+            const motivations = [
+                "💪 Setiap usaha kecil hari ini adalah investasi untuk masa depan yang gemilang!",
+                "🌟 Kamu lebih kuat dari yang kamu kira. Terus semangat belajar!",
+                "🚀 Ilmu adalah kekuatan. Semakin banyak belajar, semakin kuat kamu!",
+                "🎯 Fokus pada prosesnya, bukan hanya hasilnya. Nikmati perjalanan belajarmu!",
+                "🌈 Setiap kesalahan adalah pelajaran. Jangan takut untuk mencoba!",
+                "⭐ Percaya pada dirimu sendiri. Kamu mampu meraih impianmu!",
+                "🔥 Semangat hari ini menentukan kesuksesan hari esok!",
+                "🎪 Belajar itu seperti bermain - semakin sering dilakukan, semakin mahir!",
+                "🏔️ Puncak gunung terlihat tinggi, tapi dengan langkah kecil pasti bisa dicapai!",
+                "💎 Kamu adalah berlian yang sedang diasah. Terus berkilau!"
+            ];
+            
+            const randomMotivation = motivations[Math.floor(Math.random() * motivations.length)];
+            const motivationElement = document.getElementById('daily-motivation');
+            
+            // Add loading effect
+            motivationElement.innerHTML = '🔄 Mengambil motivasi...';
+            
+            setTimeout(() => {
+                motivationElement.innerHTML = randomMotivation;
+                motivationElement.style.animation = 'fadeIn 0.5s ease-in';
+            }, 800);
+        }
+
+        // Achievement tracking
+        let achievements = {
+            'achievement-1': false,
+            'achievement-2': false,
+            'achievement-3': false
+        };
+
+        function toggleAchievement(achievementId) {
+            achievements[achievementId] = !achievements[achievementId];
+            
+            const statusElement = document.getElementById(`${achievementId}-status`);
+            const iconElement = document.getElementById(`${achievementId}-icon`);
+            
+            if (achievements[achievementId]) {
+                statusElement.innerHTML = '<span class="text-green-500 text-xl">✅</span>';
+                iconElement.classList.add('bg-green-500');
+                iconElement.classList.remove('bg-green-100');
+                iconElement.querySelector('span').classList.add('text-white');
+                iconElement.querySelector('span').classList.remove('text-green-600');
+                
+                // Achievement celebration
+                const levelNames = {
+                    'achievement-1': 'Mengenal Komponen Komputer',
+                    'achievement-2': 'Memahami Cara Kerja Komputer',
+                    'achievement-3': 'Menggunakan Komputer dengan Aman'
+                };
+                
+                const celebration = document.createElement('div');
+                celebration.className = 'fixed top-4 right-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-lg shadow-lg z-50 text-sm';
+                celebration.innerHTML = `🎉 Level ${levelNames[achievementId]} tercapai!`;
+                document.body.appendChild(celebration);
+                
+                setTimeout(() => {
+                    celebration.remove();
+                }, 3000);
+            } else {
+                statusElement.innerHTML = '<span class="text-gray-400">⭕</span>';
+                iconElement.classList.remove('bg-green-500');
+                iconElement.classList.add('bg-green-100');
+                iconElement.querySelector('span').classList.remove('text-white');
+                iconElement.querySelector('span').classList.add('text-green-600');
+            }
+            
+            updateAchievementProgress();
+        }
+
+        function updateAchievementProgress() {
+            const completedCount = Object.values(achievements).filter(Boolean).length;
+            const percentage = (completedCount / 3) * 100;
+            
+            // Update progress text
+            document.getElementById('achievement-progress').textContent = `${completedCount}/3 capaian tercapai`;
+            document.getElementById('achievement-bar').style.width = `${percentage}%`;
+            
+            // Update emoji and level based on progress
+            const emojis = ['🎯', '😊', '🤔', '🏆'];
+            const levels = ['Mulai Belajar', 'Sedang Belajar', 'Hampir Selesai', 'Selesai!'];
+            
+            document.getElementById('achievement-emoji').textContent = emojis[completedCount];
+            document.getElementById('achievement-level').textContent = levels[completedCount];
+            
+            // Special celebration when all completed
+            if (completedCount === 3) {
+                const celebration = document.createElement('div');
+                celebration.className = 'fixed top-4 left-4 bg-gradient-to-r from-green-500 to-blue-500 text-white p-4 rounded-lg shadow-lg z-50';
+                celebration.innerHTML = '🏆 Selamat! Semua capaian pembelajaran berhasil dicapai!';
+                document.body.appendChild(celebration);
+                
+                // Add confetti effect
+                setTimeout(() => {
+                    for (let i = 0; i < 30; i++) {
+                        createConfetti();
+                    }
+                }, 500);
+                
+                setTimeout(() => {
+                    celebration.remove();
+                }, 5000);
+            }
+        }
+
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.top = '-10px';
+            confetti.style.width = '10px';
+            confetti.style.height = '10px';
+            confetti.style.backgroundColor = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'][Math.floor(Math.random() * 5)];
+            confetti.style.borderRadius = '50%';
+            confetti.style.zIndex = '9999';
+            confetti.style.pointerEvents = 'none';
+            confetti.style.animation = 'fall 3s linear forwards';
+            
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => {
+                confetti.remove();
+            }, 3000);
+        }
+
+        // Add CSS for confetti animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh) rotate(360deg);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        function getRandomFunFact() {
+            const funFacts = [
+                {
+                    icon: '🖥️',
+                    title: 'Komputer Pertama',
+                    fact: 'Komputer elektronik pertama bernama ENIAC (1946) beratnya 30 ton dan menggunakan 18.000 tabung vakum!'
+                },
+                {
+                    icon: '💾',
+                    title: 'Floppy Disk',
+                    fact: 'Floppy disk 3.5 inch sebenarnya tidak "floppy" (lentur), tapi disebut begitu karena disk 8 inch pertama memang lentur!'
+                },
+                {
+                    icon: '🐛',
+                    title: 'Bug Komputer',
+                    fact: 'Istilah "bug" dalam programming berasal dari kupu-kupu yang terjebak di komputer Harvard Mark II tahun 1947!'
+                },
+                {
+                    icon: '🌐',
+                    title: 'Internet Pertama',
+                    fact: 'Pesan internet pertama adalah "LO" - seharusnya "LOGIN" tapi sistem crash setelah 2 huruf!'
+                },
+                {
+                    icon: '🖱️',
+                    title: 'Mouse Komputer',
+                    fact: 'Mouse komputer pertama dibuat dari kayu pada tahun 1964 oleh Douglas Engelbart!'
+                },
+                {
+                    icon: '💻',
+                    title: 'RAM vs Storage',
+                    fact: 'RAM adalah memori sementara yang hilang saat komputer dimatikan, sedangkan storage menyimpan data permanen!'
+                },
+                {
+                    icon: '🔐',
+                    title: 'Password Pertama',
+                    fact: 'Password komputer pertama digunakan di MIT tahun 1961 untuk sistem Compatible Time-Sharing System!'
+                },
+                {
+                    icon: '📱',
+                    title: 'Smartphone Power',
+                    fact: 'Smartphone modern memiliki kekuatan komputasi yang lebih besar dari komputer yang digunakan untuk misi Apollo 11!'
+                }
+            ];
+            
+            const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
+            const factContent = document.getElementById('fun-fact-content');
+            
+            // Loading animation
+            factContent.innerHTML = '<div class="text-4xl mb-3">🔄</div><p class="text-gray-600">Mengambil fakta menarik...</p>';
+            
+            setTimeout(() => {
+                factContent.innerHTML = `
+                    <div class="text-4xl mb-3">${randomFact.icon}</div>
+                    <h4 class="font-bold text-purple-600 mb-2">${randomFact.title}</h4>
+                    <p class="text-gray-700">${randomFact.fact}</p>
+                `;
+                factContent.style.animation = 'fadeIn 0.5s ease-in';
+            }, 1000);
+        }
+
+        // Quick Quiz Game
+        let currentQuiz = null;
+        const quizQuestions = [
+            {
+                question: "Apa kepanjangan dari CPU?",
+                options: ["Central Processing Unit", "Computer Processing Unit", "Central Program Unit", "Computer Program Unit"],
+                correct: 0
+            },
+            {
+                question: "Manakah yang termasuk perangkat input?",
+                options: ["Monitor", "Speaker", "Keyboard", "Printer"],
+                correct: 2
+            },
+            {
+                question: "RAM adalah singkatan dari?",
+                options: ["Random Access Memory", "Read Access Memory", "Rapid Access Memory", "Real Access Memory"],
+                correct: 0
+            },
+            {
+                question: "Protokol yang digunakan untuk browsing web adalah?",
+                options: ["FTP", "SMTP", "HTTP", "TCP"],
+                correct: 2
+            },
+            {
+                question: "Perangkat lunak untuk melindungi dari virus disebut?",
+                options: ["Firewall", "Antivirus", "Browser", "Driver"],
+                correct: 1
+            }
+        ];
+
+        function startQuickQuiz() {
+            currentQuiz = quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
+            
+            document.getElementById('quiz-question').textContent = currentQuiz.question;
+            document.getElementById('quiz-start-btn').classList.add('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
+            
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.classList.remove('hidden');
+            optionsContainer.innerHTML = '';
+            
+            currentQuiz.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'w-full bg-gray-100 hover:bg-gray-200 p-2 rounded text-left transition-colors';
+                button.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+                button.onclick = () => checkQuizAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkQuizAnswer(selectedIndex) {
+            const resultDiv = document.getElementById('quiz-result');
+            const optionsContainer = document.getElementById('quiz-options');
+            
+            optionsContainer.classList.add('hidden');
+            resultDiv.classList.remove('hidden');
+            
+            if (selectedIndex === currentQuiz.correct) {
+                resultDiv.innerHTML = '<div class="text-green-600 font-semibold">🎉 Benar! Jawaban Anda tepat!</div>';
+            } else {
+                resultDiv.innerHTML = `<div class="text-red-600 font-semibold">❌ Salah! Jawaban yang benar: ${currentQuiz.options[currentQuiz.correct]}</div>`;
+            }
+            
+            // Reset button
+            setTimeout(() => {
+                document.getElementById('quiz-start-btn').classList.remove('hidden');
+                document.getElementById('quiz-start-btn').textContent = '🔄 Quiz Lagi';
+            }, 2000);
+        }
+
+        // Guess Game
+        const components = [
+            { emoji: '🖥️', name: 'Monitor', hint: 'Perangkat output untuk menampilkan gambar' },
+            { emoji: '⌨️', name: 'Keyboard', hint: 'Perangkat input untuk mengetik' },
+            { emoji: '🖱️', name: 'Mouse', hint: 'Perangkat input untuk menggerakkan kursor' },
+            { emoji: '🖨️', name: 'Printer', hint: 'Perangkat output untuk mencetak dokumen' },
+            { emoji: '🔊', name: 'Speaker', hint: 'Perangkat output untuk mengeluarkan suara' },
+            { emoji: '💾', name: 'Hard Disk', hint: 'Perangkat penyimpanan data permanen' },
+            { emoji: '🎮', name: 'Joystick', hint: 'Perangkat input untuk bermain game' },
+            { emoji: '📷', name: 'Webcam', hint: 'Perangkat input untuk merekam video' }
+        ];
+
+        let currentComponent = null;
+
+        function startGuessGame() {
+            currentComponent = components[Math.floor(Math.random() * components.length)];
+            
+            document.getElementById('component-display').innerHTML = `
+                <div class="text-6xl mb-2">${currentComponent.emoji}</div>
+                <p class="text-gray-600 mb-2"><strong>Hint:</strong> ${currentComponent.hint}</p>
+                <input type="text" id="guess-input" placeholder="Ketik jawaban Anda..." class="w-full p-2 border border-gray-300 rounded mb-2">
+                <button onclick="checkGuess()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors">
+                    ✅ Cek Jawaban
+                </button>
+            `;
+            
+            document.getElementById('guess-start-btn').classList.add('hidden');
+            document.getElementById('guess-result').classList.add('hidden');
+            
+            // Focus on input
+            setTimeout(() => {
+                document.getElementById('guess-input').focus();
+            }, 100);
+        }
+
+        function checkGuess() {
+            const userGuess = document.getElementById('guess-input').value.toLowerCase().trim();
+            const correctAnswer = currentComponent.name.toLowerCase();
+            const resultDiv = document.getElementById('guess-result');
+            
+            resultDiv.classList.remove('hidden');
+            
+            if (userGuess === correctAnswer || userGuess.includes(correctAnswer.split(' ')[0])) {
+                resultDiv.innerHTML = `<div class="text-green-600 font-semibold">🎉 Benar! Itu adalah ${currentComponent.name}!</div>`;
+            } else {
+                resultDiv.innerHTML = `<div class="text-red-600 font-semibold">❌ Salah! Jawaban yang benar: ${currentComponent.name}</div>`;
+            }
+            
+            // Reset button
+            setTimeout(() => {
+                document.getElementById('guess-start-btn').classList.remove('hidden');
+                document.getElementById('guess-start-btn').textContent = '🔄 Tebak Lagi';
+            }, 2000);
+        }
+
+        // Tips & Tricks
+        function showTip(tipType) {
+            const tips = {
+                performance: {
+                    title: '⚡ Tips Meningkatkan Performa Komputer',
+                    content: `
+                        <h4 class="font-semibold text-cyan-600 mb-3">Cara Mempercepat Komputer:</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• <strong>Bersihkan file temporary:</strong> Gunakan Disk Cleanup atau CCleaner</li>
+                            <li>• <strong>Nonaktifkan startup programs:</strong> Task Manager > Startup tab</li>
+                            <li>• <strong>Update driver:</strong> Pastikan driver hardware terbaru</li>
+                            <li>• <strong>Scan virus:</strong> Jalankan antivirus secara rutin</li>
+                            <li>• <strong>Defragmentasi hard disk:</strong> Untuk HDD (bukan SSD)</li>
+                            <li>• <strong>Tambah RAM:</strong> Jika sering multitasking berat</li>
+                            <li>• <strong>Upgrade ke SSD:</strong> Lebih cepat dari HDD tradisional</li>
+                        </ul>
+                    `
+                },
+                security: {
+                    title: '🔒 Tips Keamanan Data',
+                    content: `
+                        <h4 class="font-semibold text-blue-600 mb-3">Melindungi Data Pribadi:</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• <strong>Password kuat:</strong> Minimal 8 karakter, kombinasi huruf, angka, simbol</li>
+                            <li>• <strong>Two-Factor Authentication:</strong> Aktifkan 2FA di akun penting</li>
+                            <li>• <strong>Backup rutin:</strong> 3-2-1 rule (3 copy, 2 media berbeda, 1 offsite)</li>
+                            <li>• <strong>Update sistem:</strong> Install security patch terbaru</li>
+                            <li>• <strong>Hati-hati phishing:</strong> Jangan klik link mencurigakan</li>
+                            <li>• <strong>Gunakan VPN:</strong> Saat browsing di WiFi publik</li>
+                            <li>• <strong>Enkripsi data sensitif:</strong> Gunakan tools seperti BitLocker</li>
+                        </ul>
+                    `
+                },
+                maintenance: {
+                    title: '🛠️ Tips Perawatan Komputer',
+                    content: `
+                        <h4 class="font-semibold text-indigo-600 mb-3">Maintenance Rutin:</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• <strong>Bersihkan debu:</strong> Gunakan compressed air setiap 3-6 bulan</li>
+                            <li>• <strong>Monitor suhu:</strong> Pastikan tidak overheating (>80°C)</li>
+                            <li>• <strong>Update software:</strong> OS, driver, dan aplikasi terbaru</li>
+                            <li>• <strong>Scan disk errors:</strong> Jalankan chkdsk secara berkala</li>
+                            <li>• <strong>Organize files:</strong> Hapus file tidak perlu, organize folder</li>
+                            <li>• <strong>Check hardware:</strong> Monitor kesehatan HDD/SSD</li>
+                            <li>• <strong>Restart rutin:</strong> Restart komputer minimal seminggu sekali</li>
+                        </ul>
+                    `
+                }
+            };
+            
+            const tip = tips[tipType];
+            const tipDisplay = document.getElementById('tip-display');
+            const tipContent = document.getElementById('tip-content');
+            
+            tipContent.innerHTML = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">${tip.title}</h3>
+                    <button onclick="hideTip()" class="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+                ${tip.content}
+            `;
+            
+            tipDisplay.classList.remove('hidden');
+            tipDisplay.style.animation = 'fadeIn 0.3s ease-in';
+        }
+
+        function hideTip() {
+            document.getElementById('tip-display').classList.add('hidden');
+        }
+
+        // Initialize with Pendahuluan section
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('pendahuluan');
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f59b44d242c26b',t:'MTc2MDU5NzI2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
